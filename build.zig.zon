@@ -1,0 +1,17 @@
+.{
+    .name = "trocious",
+    .version = "0.0.0",
+    .dependencies = .{},
+    .paths = .{
+        "Makefile",
+        "build.zig",
+        "build.zig.zon",
+        "docs",
+        "src",
+        "include",
+        "tests",
+        "LICENSE",
+        "README.md",
+        "CHANGELOG.md",
+    },
+}
