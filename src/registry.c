@@ -1,7 +1,5 @@
 #include "troc.internal.h"
 
-#define init_capacity 16
-
 static TROC_TestEntry *test_entries = NULL;
 static size_t test_count = 0;
 static size_t test_capacity = 0;
@@ -35,16 +33,6 @@ size_t TROC_getRegisteredCount() {
 }
 
 static void ensureCapacity(size_t capacity) {
-    if (test_capacity >= capacity) {
-        return;
-    }
-    size_t new_capacity =
-        (test_capacity == 0) ? init_capacity : test_capacity * 2;
-    TROC_TestEntry *new_entries =
-        realloc(test_entries, sizeof(TROC_TestEntry) * new_capacity);
-    if (new_entries == NULL) {
-        TROC_fatalError("Out of memory");
-    }
-    test_entries = new_entries;
-    test_capacity = new_capacity;
+    TROC_ensureCapacity((void **)&test_entries, &test_capacity, capacity,
+                        sizeof(TROC_TestEntry));
 }

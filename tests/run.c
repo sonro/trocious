@@ -1,4 +1,3 @@
-#include <assert.h>
 #include <trocious.h>
 
 int main() {
@@ -7,5 +6,5 @@ int main() {
 }
 
 TROC_test(foo, bar) {
-    assert(2 == 2);
+    TROC_expect(2 == 2);
 }
