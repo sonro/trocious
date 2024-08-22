@@ -8,6 +8,8 @@
 
 #define TROC_assert(expr) __TROC_assert(expr)
 
+#define TROC_failMsg(reason) __TROC_customFail(reason)
+
 void TROC_runTests();
 
 int TROC_finish();

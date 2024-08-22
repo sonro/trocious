@@ -5,52 +5,52 @@
 #define TROC_init_capacity 16
 #define TROC_fail_buf_size 1024
 
-typedef void (*TROC_TestFunction)();
+typedef void (*_TROC_TestFunction)();
 
-typedef struct TROC_TestEntry {
+typedef struct _TROC_TestEntry {
     const char *suite_name;
     const char *test_name;
-    TROC_TestFunction function;
-} TROC_TestEntry;
+    _TROC_TestFunction function;
+} _TROC_TestEntry;
 
-typedef struct TROC_Failure {
+typedef struct _TROC_Failure {
     const char *expr;
     const char *file;
     const int line;
-} TROC_Failure;
+} _TROC_Failure;
 
-void TROC_init();
+void _TROC_init();
 
-void TROC_registerTest(const char *suite_name, const char *test_name,
-                       TROC_TestFunction test_func);
+void _TROC_registerTest(const char *suite_name, const char *test_name,
+                        _TROC_TestFunction test_func);
 
-void TROC_deinitRegistry();
+void _TROC_deinitRegistry();
 
-const TROC_TestEntry *TROC_getRegistry();
+const _TROC_TestEntry *_TROC_getRegistry();
 
-size_t TROC_getRegisteredCount();
+size_t _TROC_getRegisteredCount();
 
-void TROC_runTest(const TROC_TestEntry *entry);
+void _TROC_runTest(const _TROC_TestEntry *entry);
 
-void TROC_printSummary();
+void _TROC_printSummary();
 
-void TROC_cleanup();
+void _TROC_cleanup();
 
-void TROC_success();
+void _TROC_success();
 
-void TROC_fail(const TROC_Failure failure);
-
-[[noreturn]]
-void TROC_failExit(const TROC_Failure failure);
+void _TROC_fail(const _TROC_Failure failure);
 
 [[noreturn]]
-void TROC_fatalError(const char *msg, ...);
+void _TROC_failExit(const _TROC_Failure failure);
 
-void TROC_ensureCapacity(void **ptr, size_t *existing, size_t new,
-                         size_t elem_size);
+[[noreturn]]
+void _TROC_fatalError(const char *msg, ...);
 
-#define TROC_Failure_new(expr_str)                                             \
-    (TROC_Failure) {                                                           \
+void _TROC_ensureCapacity(void **ptr, size_t *existing, size_t new,
+                          size_t elem_size);
+
+#define __TROC_Failure_new(expr_str)                                           \
+    (_TROC_Failure) {                                                          \
         .expr = expr_str, .file = __FILE__, .line = __LINE__                   \
     }
 
@@ -58,23 +58,27 @@ void TROC_ensureCapacity(void **ptr, size_t *existing, size_t new,
     void test_##suite_name##_##test_name(void);                                \
     __attribute__((                                                            \
         constructor)) static void register_##suite_name##_##test_name(void) {  \
-        TROC_registerTest(#suite_name, #test_name,                             \
-                          test_##suite_name##_##test_name);                    \
+        _TROC_registerTest(#suite_name, #test_name,                            \
+                           test_##suite_name##_##test_name);                   \
     }                                                                          \
     void test_##suite_name##_##test_name(void)
 
 #define __TROC_assert(expr)                                                    \
     if (expr) {                                                                \
-        TROC_success();                                                        \
+        _TROC_success();                                                       \
     } else {                                                                   \
-        const TROC_Failure __failure = TROC_Failure_new(#expr);                \
-        TROC_failExit(__failure);                                              \
+        const _TROC_Failure __failure = __TROC_Failure_new(#expr);             \
+        _TROC_failExit(__failure);                                             \
     }
 
 #define __TROC_expect(expr)                                                    \
     if (expr) {                                                                \
-        TROC_success();                                                        \
+        _TROC_success();                                                       \
     } else {                                                                   \
-        const TROC_Failure __failure = TROC_Failure_new(#expr);                \
-        TROC_fail(__failure);                                                  \
+        const _TROC_Failure __failure = __TROC_Failure_new(#expr);             \
+        _TROC_fail(__failure);                                                 \
     }
+
+#define __TROC_customFail(reason)                                              \
+    const _TROC_Failure __failure = __TROC_Failure_new(reason);                \
+    TROC_fail(__failure)
