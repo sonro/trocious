@@ -1,4 +1,5 @@
 #include "troc.internal.h"
+#include <stdio.h>
 
 static _TROC_TestEntry *test_entries = NULL;
 static size_t test_count = 0;
@@ -16,7 +17,7 @@ void _TROC_registerTest(const char *suite_name, const char *test_name,
 }
 
 void _TROC_deinitRegistry() {
-    if (test_entries == NULL) {
+    if (test_entries != NULL) {
         free(test_entries);
         test_entries = NULL;
         test_count = 0;

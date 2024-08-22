@@ -92,9 +92,9 @@ void _TROC_printSummary() {
 
     if (stdout_is_tty) {
         printf("%sSummary:%s\n", PRINT_TURQUOISE, PRINT_RESET);
-        printf("    Tests passed: %s%zu\n%s", PRINT_GREEN, tests_passed,
+        printf("    Tests passed: %s%zu%s\n", PRINT_GREEN, tests_passed,
                PRINT_RESET);
-        printf("    Tests failed: %s%zu\n%s",
+        printf("    Tests failed: %s%zu%s\n",
                tests_failed > 0 ? PRINT_RED : PRINT_GREEN, tests_failed,
                PRINT_RESET);
     } else {
