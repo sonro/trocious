@@ -82,6 +82,8 @@ void _TROC_printSummary() {
     if (tests_failed > 0) {
         if (stdout_is_tty) {
             printf("%sFailures:%s\n", PRINT_TURQUOISE, PRINT_RESET);
+        } else {
+            printf("Failures:\n");
         }
         for (size_t i = 0; i < fail_strs_count; i++) {
             printf("    %s\n", fail_strs[i]);
