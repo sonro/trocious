@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixes
+
+- Memory leak in `TROC_deinitRegistry`.
+- Test failure reporting in non-color mode.
+- Private declarations leaking into public API.
+
 ## [0.0.1] - 2024-08-22
 
 ### Added
