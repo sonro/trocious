@@ -1,7 +1,7 @@
 #include "troc.internal.h"
-#include <stdio.h>
+#include "troc.lib.h"
 
-static _TROC_TestEntry *test_entries = NULL;
+static TROC_TestEntry *test_entries = NULL;
 static size_t test_count = 0;
 static size_t test_capacity = 0;
 
@@ -11,12 +11,12 @@ void _TROC_registerTest(const char *suite_name, const char *test_name,
                         _TROC_TestFunction test_func) {
     size_t new_count = test_count + 1;
     ensureCapacity(new_count);
-    _TROC_TestEntry entry = {suite_name, test_name, test_func};
+    TROC_TestEntry entry = {suite_name, test_name, test_func};
     test_entries[test_count] = entry;
     test_count = new_count;
 }
 
-void _TROC_deinitRegistry() {
+void TROC_deinitRegistry() {
     if (test_entries != NULL) {
         free(test_entries);
         test_entries = NULL;
@@ -25,15 +25,15 @@ void _TROC_deinitRegistry() {
     }
 }
 
-const _TROC_TestEntry *_TROC_getRegistry() {
+const TROC_TestEntry *TROC_getRegistry() {
     return test_entries;
 }
 
-size_t _TROC_getRegisteredCount() {
+size_t TROC_getRegisteredCount() {
     return test_count;
 }
 
 static void ensureCapacity(size_t capacity) {
-    _TROC_ensureCapacity((void **)&test_entries, &test_capacity, capacity,
-                         sizeof(_TROC_TestEntry));
+    TROC_ensureCapacity((void **)&test_entries, &test_capacity, capacity,
+                        sizeof(TROC_TestEntry));
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "troc.internal.h"
+#include "troc.lib.h"
 
 #define TROC_test(suite_name, test_name) __TROC_test(suite_name, test_name)
 

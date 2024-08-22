@@ -5,6 +5,7 @@
 #include <unistd.h>
 
 #include "troc.internal.h"
+#include "troc.lib.h"
 #include "trocious.h"
 
 #define PRINT_TURQUOISE "\033[0;36m"
@@ -12,7 +13,7 @@
 #define PRINT_GREEN "\033[0;32m"
 #define PRINT_RESET "\033[0m"
 
-static thread_local const _TROC_TestEntry *TROC_current_test = NULL;
+static thread_local const TROC_TestEntry *TROC_current_test = NULL;
 
 static size_t tests_run = 0;
 static size_t tests_failed = 0;
@@ -27,20 +28,20 @@ static char *Failure_format(const _TROC_Failure failure);
 static void ensureFailStrCapacity(size_t capacity);
 
 void TROC_runTests() {
-    _TROC_init();
-    const _TROC_TestEntry *test_entries = _TROC_getRegistry();
+    TROC_init();
+    const TROC_TestEntry *test_entries = TROC_getRegistry();
     if (test_entries == NULL) {
         fprintf(stderr, "No tests to run\n");
-        _TROC_cleanup();
+        TROC_cleanup();
         exit(EXIT_SUCCESS);
     }
-    const size_t test_count = _TROC_getRegisteredCount();
+    const size_t test_count = TROC_getRegisteredCount();
     for (size_t i = 0; i < test_count; i++) {
-        _TROC_runTest(&test_entries[i]);
+        TROC_runTest(&test_entries[i]);
     }
 }
 
-void _TROC_init() {
+void TROC_init() {
     stdout_is_tty = isatty(STDOUT_FILENO);
     if (stdout_is_tty) {
         printf("%sTROCIOUS%s testing:\n\n", PRINT_TURQUOISE, PRINT_RESET);
@@ -54,7 +55,7 @@ void _TROC_init() {
     fail_strs_capacity = 0;
 }
 
-void _TROC_runTest(const _TROC_TestEntry *entry) {
+void TROC_runTest(const TROC_TestEntry *entry) {
     size_t current_fails = fail_strs_count;
     TROC_current_test = entry;
     tests_run++;
@@ -65,17 +66,17 @@ void _TROC_runTest(const _TROC_TestEntry *entry) {
 }
 
 int TROC_finish() {
-    _TROC_printSummary();
-    _TROC_cleanup();
+    TROC_printSummary();
+    TROC_cleanup();
     return tests_failed == 0 ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
-void _TROC_cleanup() {
-    _TROC_deinitRegistry();
+void TROC_cleanup() {
+    TROC_deinitRegistry();
     deinitFailStrs();
 }
 
-void _TROC_printSummary() {
+void TROC_printSummary() {
     printf("\n\n");
     size_t tests_passed = tests_run - tests_failed;
 
@@ -128,7 +129,7 @@ void _TROC_failExit(const _TROC_Failure failure) {
 }
 
 [[noreturn]]
-void _TROC_fatalError(const char *msg, ...) {
+void TROC_fatalError(const char *msg, ...) {
     fprintf(stderr, "A trocious fatal error: ");
 
     va_list args;
@@ -137,12 +138,12 @@ void _TROC_fatalError(const char *msg, ...) {
     va_end(args);
     fprintf(stderr, "\n");
 
-    _TROC_cleanup();
+    TROC_cleanup();
     exit(EXIT_FAILURE);
 }
 
-void _TROC_ensureCapacity(void **ptr, size_t *existing, size_t new,
-                          size_t elem_size) {
+void TROC_ensureCapacity(void **ptr, size_t *existing, size_t new,
+                         size_t elem_size) {
     size_t old_cap = *existing;
     if (old_cap >= new) {
         return;
@@ -150,7 +151,7 @@ void _TROC_ensureCapacity(void **ptr, size_t *existing, size_t new,
     size_t new_cap = (old_cap == 0) ? TROC_init_capacity : old_cap * 2;
     void *new_ptr = realloc(*ptr, new_cap * elem_size);
     if (new_ptr == NULL) {
-        _TROC_fatalError("Out of memory");
+        TROC_fatalError("Out of memory");
     }
     *ptr = new_ptr;
     *existing = new_cap;
@@ -172,12 +173,12 @@ static char *Failure_format(const _TROC_Failure failure) {
 
     size_t len = strlen(buf);
     if (len >= TROC_fail_buf_size) {
-        _TROC_fatalError("Failure message too long: '%s'", buf);
+        TROC_fatalError("Failure message too long: '%s'", buf);
     }
 
     char *fail_str = calloc(len + 1, sizeof(char));
     if (fail_str == NULL) {
-        _TROC_fatalError("Out of memory");
+        TROC_fatalError("Out of memory");
     }
 
     memcpy(fail_str, buf, len);
@@ -192,8 +193,8 @@ static void failStrAppend(const char *str) {
 }
 
 static void ensureFailStrCapacity(size_t capacity) {
-    _TROC_ensureCapacity((void **)&fail_strs, &fail_strs_capacity, capacity,
-                         sizeof(char *));
+    TROC_ensureCapacity((void **)&fail_strs, &fail_strs_capacity, capacity,
+                        sizeof(char *));
 }
 
 static void deinitFailStrs() {

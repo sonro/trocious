@@ -1,17 +1,9 @@
 #pragma once
 
-#include <stdlib.h>
-
 #define TROC_init_capacity 16
 #define TROC_fail_buf_size 1024
 
 typedef void (*_TROC_TestFunction)();
-
-typedef struct _TROC_TestEntry {
-    const char *suite_name;
-    const char *test_name;
-    _TROC_TestFunction function;
-} _TROC_TestEntry;
 
 typedef struct _TROC_Failure {
     const char *expr;
@@ -19,22 +11,8 @@ typedef struct _TROC_Failure {
     const int line;
 } _TROC_Failure;
 
-void _TROC_init();
-
 void _TROC_registerTest(const char *suite_name, const char *test_name,
                         _TROC_TestFunction test_func);
-
-void _TROC_deinitRegistry();
-
-const _TROC_TestEntry *_TROC_getRegistry();
-
-size_t _TROC_getRegisteredCount();
-
-void _TROC_runTest(const _TROC_TestEntry *entry);
-
-void _TROC_printSummary();
-
-void _TROC_cleanup();
 
 void _TROC_success();
 
@@ -42,12 +20,6 @@ void _TROC_fail(const _TROC_Failure failure);
 
 [[noreturn]]
 void _TROC_failExit(const _TROC_Failure failure);
-
-[[noreturn]]
-void _TROC_fatalError(const char *msg, ...);
-
-void _TROC_ensureCapacity(void **ptr, size_t *existing, size_t new,
-                          size_t elem_size);
 
 #define __TROC_Failure_new(expr_str)                                           \
     (_TROC_Failure) {                                                          \
