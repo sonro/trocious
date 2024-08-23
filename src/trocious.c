@@ -44,9 +44,9 @@ void TROC_runTests() {
 void TROC_init() {
     stdout_is_tty = isatty(STDOUT_FILENO);
     if (stdout_is_tty) {
-        printf("%sTROCIOUS%s testing:\n\n", PRINT_TURQUOISE, PRINT_RESET);
+        printf("A %sTROCIOUS%s testing:\n\n", PRINT_TURQUOISE, PRINT_RESET);
     } else {
-        printf("TROCIOUS Running tests:\n\n");
+        printf("TROCIOUS running tests:\n\n");
     }
     tests_run = 0;
     tests_failed = 0;
