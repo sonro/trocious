@@ -18,14 +18,21 @@ const release_cflags = std_cflags ++ [_][]const u8{
     "-O3",
 };
 
+const src_files = &.{
+    "src/trocious.c",
+    "src/registry.c",
+};
+
+const test_files = &.{
+    "tests/run.c",
+    "tests/another_file.c",
+};
+
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
     const cflags = if (optimize == .Debug) debug_cflags else release_cflags;
-
-    var src_files = SourceFiles.inDir(b.allocator, "src") catch unreachable;
-    defer src_files.deinit(b.allocator);
 
     const lib = b.addStaticLibrary(.{
         .name = "libtrocious",
@@ -36,7 +43,7 @@ pub fn build(b: *std.Build) void {
 
     lib.installHeadersDirectory(b.path("include"), "", .{});
     lib.addIncludePath(b.path("include"));
-    lib.addCSourceFiles(.{ .files = src_files.slice(), .flags = &cflags });
+    lib.addCSourceFiles(.{ .files = src_files, .flags = &cflags });
     b.installArtifact(lib);
 
     const test_exe = b.addExecutable(.{
@@ -46,10 +53,7 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-    var test_files = SourceFiles.inDir(b.allocator, "tests") catch unreachable;
-    defer test_files.deinit(b.allocator);
-
-    test_exe.addCSourceFiles(.{ .files = test_files.slice(), .flags = &debug_cflags });
+    test_exe.addCSourceFiles(.{ .files = test_files, .flags = &debug_cflags });
     test_exe.linkLibrary(lib);
     b.installArtifact(test_exe);
 
@@ -68,46 +72,3 @@ fn addCleanSteps(b: *std.Build) void {
     clean_step.dependOn(&remove_build_artifacts.step);
     clean_step.dependOn(&remove_cache.step);
 }
-
-const SourceFiles = struct {
-    list: std.ArrayListUnmanaged([]u8),
-    const Self = @This();
-
-    pub fn init() SourceFiles {
-        return SourceFiles{
-            .list = std.ArrayListUnmanaged([]u8){},
-        };
-    }
-
-    pub fn slice(self: *const Self) []const []u8 {
-        return self.list.items;
-    }
-
-    pub fn deinit(self: *Self, allocator: std.mem.Allocator) void {
-        for (self.list.items) |file| {
-            allocator.free(file);
-        }
-
-        self.list.deinit(allocator);
-    }
-
-    pub fn inDir(allocator: std.mem.Allocator, dir_path: []const u8) !Self {
-        var self = Self.init();
-        errdefer self.deinit(allocator);
-
-        var dir = try std.fs.cwd().openDir(dir_path, .{ .iterate = true });
-
-        defer dir.close();
-
-        var walker = try dir.walk(allocator);
-        defer walker.deinit();
-
-        while (try walker.next()) |entry| {
-            // is a c file
-            if (!std.mem.endsWith(u8, entry.path, ".c")) continue;
-            const path = try std.fs.path.join(allocator, &.{ dir_path, entry.path });
-            try self.list.append(allocator, path);
-        }
-        return self;
-    }
-};
