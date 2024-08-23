@@ -6,12 +6,12 @@
 typedef void (*_TROC_TestFunction)();
 
 typedef struct _TROC_Failure {
-    const char *expr;
-    const char *file;
+    const char* expr;
+    const char* file;
     const int line;
 } _TROC_Failure;
 
-void _TROC_registerTest(const char *suite_name, const char *test_name,
+void _TROC_registerTest(const char* suite_name, const char* test_name,
                         _TROC_TestFunction test_func);
 
 void _TROC_success();
@@ -53,4 +53,4 @@ void _TROC_failExit(const _TROC_Failure failure);
 
 #define __TROC_customFail(reason)                                              \
     const _TROC_Failure __failure = __TROC_Failure_new(reason);                \
-    TROC_fail(__failure)
+    _TROC_fail(__failure)
