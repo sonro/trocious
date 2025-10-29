@@ -1,94 +1,70 @@
-TEST_CFLAGS= \
-		-std=c23\
-		-Wall\
-		-Werror\
-		-Wextra\
-		-Wpedantic\
-		-Wno-gnu\
-		-Wno-missing-braces\
-		-Iinclude\
-		-g
+# Compiler and standard
+CC      = clang
+CSTD    = c23
 
-TEST_LDFLAGS= \
-		-Lout/lib\
-	 	-ltrocious
-
-LIB_CFLAGS= \
-		-std=c23\
-		-Wall\
-		-Werror\
-		-Wextra\
-		-Wpedantic\
-		-Wno-gnu\
-		-Wno-missing-braces\
-		-Iinclude\
-		-g
-
-MKDIR=mkdir -p
-RM=rm -f
-
-SRC_DIR=src
-TEST_DIR=tests
-INC_DIR=include
-OUT_DIR=out
-OBJ_DIR=out/obj
-BIN_DIR=out/bin
-LIB_DIR=out/lib
-
-# Source files
-SRC_FILES = $(wildcard $(SRC_DIR)/*.c)
-TEST_FILES = $(wildcard $(TEST_DIR)/*.c)
-TEST_MAIN = $(TEST_DIR)/run.c
-
-# Include files
-INC_FILES = $(wildcard $(INC_DIR)/*.h)
-
-# Object files
-SRC_OBJ_FILES = $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRC_FILES))
-TEST_OBJ_FILES = $(patsubst $(TEST_DIR)/%.c,$(OBJ_DIR)/%.o,$(TEST_FILES))
+# Directories
+SRC_DIR     = src
+INCLUDE_DIR = include
+TEST_DIR    = tests
+OBJ_DIR     = out/obj
+LIB_DIR     = out/lib
+BIN_DIR     = out/bin
 
 # Targets
-LIB_TARGET = $(LIB_DIR)/libtrocious.a
+LIB_NAME    = libtrocious.a
+LIB_TARGET  = $(LIB_DIR)/$(LIB_NAME)
 TEST_TARGET = $(BIN_DIR)/test
 
-.PHONY: build
-build: $(LIB_TARGET)
+# Flags
+CFLAGS  = -std=$(CSTD) -Wall -Wextra -Wpedantic -g \
+		  -I$(INCLUDE_DIR) -I$(SRC_DIR) \
+		  -O3 
+ARFLAGS = rcs
 
-# Ensure directories exist
-$(OBJ_DIR):
-	$(MKDIR) $(OBJ_DIR)
+# Files
+SRC_FILES   = $(wildcard $(SRC_DIR)/*.c)
+OBJ_FILES   = $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRC_FILES))
+TEST_FILES  = $(wildcard $(TEST_DIR)/*.c)
+TEST_OBJ    = $(patsubst $(TEST_DIR)/%.c,$(OBJ_DIR)/%.test.o,$(TEST_FILES))
 
-$(BIN_DIR):
-	$(MKDIR) $(BIN_DIR)
+# Default target
+.PHONY: all
+all: $(LIB_TARGET)
 
-$(LIB_DIR):
-	$(MKDIR) $(LIB_DIR)
+# Build library
+$(LIB_TARGET): $(OBJ_FILES) | $(LIB_DIR)
+	@echo "Archiving $@"
+	@$(AR) $(ARFLAGS) $@ $^
 
-# Build the library
-$(LIB_TARGET): $(SRC_OBJ_FILES) | $(LIB_DIR)
-	$(AR) -cvrs $(LIB_TARGET) $(SRC_OBJ_FILES)
+# Compile source files
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
+	@echo "Compiling $<"
+	@$(CC) $(CFLAGS) -c $< -o $@
 
-# Build the test binary
-$(TEST_TARGET): $(LIB_TARGET) $(TEST_OBJ_FILES) | $(BIN_DIR)
-	$(CC) $(TEST_OBJ_FILES) $(TEST_LDFLAGS) -o $@
+# Compile test sources
+$(OBJ_DIR)/%.test.o: $(TEST_DIR)/%.c | $(OBJ_DIR)
+	@$(CC) $(CFLAGS) -I$(SRC_DIR) -c $< -o $@
 
-# Compile all source files from src into object files
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(INC_FILES) | $(OBJ_DIR)
-	$(CC) $(LIB_CFLAGS) -c $< -o $@
+# Build test binary
+.PHONY: test-build
+test-build: $(TEST_TARGET)
 
-# Compile all source files from tests into object files
-$(OBJ_DIR)/%.o: $(TEST_DIR)/%.c $(INC_FILES) | $(OBJ_DIR)
-	$(CC) $(TEST_CFLAGS) -c $< -o $@
+$(TEST_TARGET): $(OBJ_FILES) $(TEST_OBJ) | $(BIN_DIR)
+	@$(CC) $(CFLAGS) $^ -o $@
 
-# Clean up build artifacts
+# Run tests
+.PHONY: test
+test: test-build
+	@$(TEST_TARGET)
+
+# Utility targets
+$(OBJ_DIR) $(LIB_DIR) $(BIN_DIR):
+	@mkdir -p $@
+
 .PHONY: clean
 clean:
-	$(RM) -r $(OUT_DIR)
+	@rm -rf $(OBJ_DIR) $(LIB_DIR) $(BIN_DIR)
 
-.PHONY: build-test
-build-test: $(TEST_TARGET)
-
-.PHONY: test
-test: build-test
-	$(TEST_TARGET)
+.PHONY: rebuild
+rebuild: clean all
 
