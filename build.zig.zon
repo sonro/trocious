@@ -1,7 +1,7 @@
 .{
     .name = .trocious,
     .fingerprint = 0x8f1ea8b2041519e4,
-    .version = "0.0.1",
+    .version = "0.0.2",
     .dependencies = .{},
     .paths = .{
         "Makefile",
